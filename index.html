@@ -169,36 +169,37 @@
     });
 
     /* Cuando encuentra la imagen */
-    target.addEventListener("targetFound", () => {
+target.addEventListener("targetFound", () => {
 
-      console.log("Imagen encontrada");
+  console.log("Imagen encontrada");
 
-      mensaje.innerHTML = "✨ ¡Momento mágico encontrado!";
+  mensaje.innerHTML = "✨ ¡Momento mágico encontrado!";
 
-      video.currentTime = 0;
+  video.currentTime = 0;
 
-      video.muted = true;
+  video.muted = true;
 
-      video.play().catch((error) => {
+  sonido.style.display = "block";
 
-        console.log("El video necesita interacción:", error);
+  video.play().catch((error) => {
+    console.log("El video necesita interacción:", error);
+  });
 
-        sonido.style.display = "block";
+});
 
-      });
 
-    });
+/* Cuando deja de ver la imagen */
+target.addEventListener("targetLost", () => {
 
-    /* Cuando deja de ver la imagen */
-    target.addEventListener("targetLost", () => {
+  console.log("Imagen perdida");
 
-      console.log("Imagen perdida");
+  mensaje.innerHTML = "📷 Busca nuevamente la imagen";
 
-      mensaje.innerHTML = "📷 Busca nuevamente la imagen";
+  video.pause();
 
-      video.pause();
+  sonido.style.display = "none";
 
-    });
+});
 
     /* Activar sonido */
     sonido.addEventListener("click", () => {
