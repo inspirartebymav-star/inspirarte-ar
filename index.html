@@ -1,322 +1,318 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#000000">
-  <title>INSPIRARTE AR · Dale play a momentos mágicos</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 
-  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+<title>INSPIRARTE AR</title>
 
-  <style>
-    :root {
-      --gold: #d4af37;
-      --black: #050505;
-      --white: #ffffff;
-    }
+<script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
-    * { box-sizing: border-box; }
+<style>
+html,body{
+  margin:0;
+  padding:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:#000;
+}
 
-    html, body {
-      margin: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: var(--black);
-      color: var(--white);
-      font-family: Arial, Helvetica, sans-serif;
-    }
+#ar-container{
+  position:fixed;
+  inset:0;
+  width:100vw;
+  height:100vh;
+  overflow:hidden;
+}
 
-    a-scene {
-      position: fixed !important;
-      inset: 0;
-      width: 100vw !important;
-      height: 100vh !important;
-      z-index: 1;
-    }
+a-scene{
+  position:fixed!important;
+  inset:0!important;
+  width:100vw!important;
+  height:100vh!important;
+  margin:0!important;
+  padding:0!important;
+}
 
-    #start-screen {
-      position: fixed;
-      inset: 0;
-      z-index: 100;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 28px;
-      background:
-        radial-gradient(circle at 50% 25%, rgba(212,175,55,.16), transparent 34%),
-        #050505;
-    }
+.a-canvas{
+  position:fixed!important;
+  inset:0!important;
+  width:100vw!important;
+  height:100vh!important;
+}
 
-    .card {
-      width: min(440px, 100%);
-    }
+#start-screen{
+  position:fixed;
+  inset:0;
+  z-index:20;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  gap:18px;
+  padding:30px;
+  box-sizing:border-box;
+  background:#050505;
+  color:white;
+  text-align:center;
+  font-family:Arial,sans-serif;
+}
 
-    .brand {
-      margin: 0 0 10px;
-      font-size: clamp(34px, 10vw, 54px);
-      letter-spacing: .12em;
-      font-weight: 800;
-    }
+#start-screen h1{
+  margin:0;
+  font-size:30px;
+}
 
-    .tagline {
-      margin: 0 auto 28px;
-      color: #ddd;
-      font-size: 17px;
-      line-height: 1.5;
-    }
+#start-screen p{
+  margin:0;
+  max-width:320px;
+  line-height:1.5;
+  font-size:16px;
+}
 
-    .instructions {
-      margin: 0 auto 24px;
-      color: #aaa;
-      font-size: 14px;
-      line-height: 1.55;
-    }
+#start-button,
+#sound-button{
+  border:0;
+  border-radius:999px;
+  padding:14px 24px;
+  font-size:16px;
+  font-weight:bold;
+}
 
-    #start-button {
-      border: 1px solid var(--gold);
-      background: var(--gold);
-      color: #050505;
-      border-radius: 999px;
-      padding: 15px 28px;
-      font-size: 16px;
-      font-weight: 800;
-      cursor: pointer;
-      min-width: 220px;
-    }
+#status{
+  position:fixed;
+  top:18px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:10;
+  display:none;
+  background:rgba(0,0,0,.72);
+  color:white;
+  padding:10px 17px;
+  border-radius:999px;
+  font-family:Arial,sans-serif;
+  font-size:15px;
+  white-space:nowrap;
+}
 
-    #start-button:disabled {
-      opacity: .6;
-      cursor: wait;
-    }
-
-    #status {
-      position: fixed;
-      z-index: 90;
-      top: max(18px, env(safe-area-inset-top));
-      left: 50%;
-      transform: translateX(-50%);
-      width: max-content;
-      max-width: calc(100vw - 32px);
-      padding: 9px 15px;
-      border-radius: 999px;
-      background: rgba(0,0,0,.65);
-      backdrop-filter: blur(8px);
-      color: white;
-      font-size: 13px;
-      text-align: center;
-      display: none;
-    }
-
-    #sound-button {
-      position: fixed;
-      z-index: 91;
-      left: 50%;
-      bottom: max(24px, calc(env(safe-area-inset-bottom) + 18px));
-      transform: translateX(-50%);
-      border: 0;
-      border-radius: 999px;
-      padding: 13px 20px;
-      background: rgba(255,255,255,.94);
-      color: #111;
-      font-weight: 800;
-      display: none;
-      cursor: pointer;
-    }
-
-    #help {
-      position: fixed;
-      z-index: 89;
-      left: 50%;
-      bottom: max(80px, calc(env(safe-area-inset-bottom) + 72px));
-      transform: translateX(-50%);
-      width: min(420px, calc(100vw - 32px));
-      padding: 10px 14px;
-      border-radius: 14px;
-      background: rgba(0,0,0,.55);
-      color: #eee;
-      font-size: 13px;
-      line-height: 1.4;
-      text-align: center;
-      display: none;
-    }
-
-    #error {
-      position: fixed;
-      inset: 0;
-      z-index: 110;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 28px;
-      text-align: center;
-      background: rgba(0,0,0,.96);
-    }
-
-    #error .box {
-      width: min(460px, 100%);
-    }
-
-    #error h2 { margin-top: 0; }
-    #error p { color: #ccc; line-height: 1.55; }
-  </style>
+#sound-button{
+  position:fixed;
+  bottom:24px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:11;
+  display:none;
+}
+</style>
 </head>
 
 <body>
 
-  <section id="start-screen">
-    <div class="card">
-      <h1 class="brand">INSPIRARTE</h1>
-      <p class="tagline">dale play a momentos mágicos ✨</p>
-      <p class="instructions">
-        Convierte una imagen física en una experiencia interactiva.
-        Pulsa comenzar, permite el acceso a la cámara y apunta al diseño.
-      </p>
-      <button id="start-button">COMENZAR EXPERIENCIA</button>
-    </div>
-  </section>
+<div id="ar-container">
 
-  <div id="status">Preparando cámara…</div>
-  <div id="help">Apunta la cámara hacia la imagen que registraste en MindAR.</div>
-  <button id="sound-button">🔊 Activar sonido</button>
+<div id="start-screen">
+<h1>INSPIRARTE ✨</h1>
 
-  <video id="video-source"
-         src="./video.mp4"
-         preload="auto"
-         loop
-         playsinline
-         webkit-playsinline
-         muted
-         crossorigin="anonymous"></video>
+<p>
+Apunta la cámara hacia tu imagen para descubrir tu momento mágico.
+</p>
 
-  <a-scene
-    mindar-image="imageTargetSrc: ./targets.mind; autoStart: false; uiLoading: no; uiScanning: no; uiError: no;"
-    embedded
-    renderer="colorManagement: true; physicallyCorrectLights: true"
-    color-space="sRGB"
-    vr-mode-ui="enabled: false"
-    device-orientation-permission-ui="enabled: false">
+<button id="start-button">
+✨ Comenzar experiencia
+</button>
+</div>
 
-    <a-assets>
-      <video id="ar-video"
-             src="./video.mp4"
-             preload="auto"
-             loop
-             playsinline
-             webkit-playsinline
-             muted
-             crossorigin="anonymous"></video>
-    </a-assets>
+<div id="status">
+Apunta al marcador 📷
+</div>
 
-    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+<button id="sound-button">
+🔊 Activar sonido
+</button>
 
-    <!-- targetIndex 0 = primera imagen dentro de targets.mind -->
-    <a-entity mindar-image-target="targetIndex: 0">
-      <a-video
-        src="#ar-video"
-        width="1"
-        height="0.5625"
-        position="0 0 0"
-        rotation="0 0 0">
-      </a-video>
-    </a-entity>
-  </a-scene>
 
-  <section id="error">
-    <div class="box">
-      <h2>No se pudo iniciar la cámara</h2>
-      <p>
-        Comprueba que estás abriendo esta página con HTTPS y que permitiste
-        el acceso a la cámara del navegador.
-      </p>
-    </div>
-  </section>
+<a-scene
+id="ar-scene"
 
-  <script>
-    const scene = document.querySelector('a-scene');
-    const startScreen = document.getElementById('start-screen');
-    const startButton = document.getElementById('start-button');
-    const status = document.getElementById('status');
-    const help = document.getElementById('help');
-    const soundButton = document.getElementById('sound-button');
-    const errorScreen = document.getElementById('error');
-    const video = document.getElementById('ar-video');
-    const target = document.querySelector('[mindar-image-target]');
+mindar-image="
+imageTargetSrc: ./targets.mind;
+autoStart: false;
+uiLoading: no;
+uiScanning: no;
+uiError: no;
+"
 
-    let arStarted = false;
-    let soundOn = false;
+embedded
 
-    scene.addEventListener('loaded', () => {
-      const arSystem = scene.systems['mindar-image-system'];
+color-space="sRGB"
 
-      startButton.addEventListener('click', async () => {
-        startButton.disabled = true;
-        startButton.textContent = 'INICIANDO…';
-        startScreen.style.display = 'none';
-        status.style.display = 'block';
-        help.style.display = 'block';
-        status.textContent = 'Solicitando acceso a la cámara…';
+renderer="
+colorManagement: true;
+physicallyCorrectLights;
+alpha: true
+"
 
-        try {
-          await arSystem.start();
-          arStarted = true;
-          status.textContent = 'Buscando la imagen…';
-        } catch (err) {
-          console.error(err);
-          errorScreen.style.display = 'flex';
-          status.style.display = 'none';
-          help.style.display = 'none';
-        } finally {
-          startButton.disabled = false;
-          startButton.textContent = 'COMENZAR EXPERIENCIA';
-        }
-      });
+vr-mode-ui="enabled: false"
 
-      target.addEventListener('targetFound', async () => {
-        status.textContent = '✨ ¡Momento mágico encontrado!';
-        help.style.display = 'none';
-        soundButton.style.display = 'block';
+device-orientation-permission-ui="enabled: false"
 
-        video.muted = true;
-        try {
-          await video.play();
-        } catch (err) {
-          console.log('Autoplay bloqueado:', err);
-        }
-      });
+loading-screen="enabled: false"
+>
 
-      target.addEventListener('targetLost', () => {
-        status.textContent = 'Buscando la imagen…';
-        help.style.display = 'block';
-        soundButton.style.display = 'none';
-        video.pause();
-      });
 
-      soundButton.addEventListener('click', async () => {
-        try {
-          if (!soundOn) {
-            video.muted = false;
-            await video.play();
-            soundButton.textContent = '🔇 Silenciar';
-            soundOn = true;
-          } else {
-            video.muted = true;
-            soundButton.textContent = '🔊 Activar sonido';
-            soundOn = false;
-          }
-        } catch (err) {
-          console.error(err);
-        }
-      });
+<a-assets>
 
-      window.addEventListener('beforeunload', () => {
-        if (arStarted) {
-          try { arSystem.stop(); } catch (_) {}
-        }
-      });
-    });
-  </script>
+<video
+id="ar-video"
+src="./video.mp4"
+preload="auto"
+loop
+playsinline
+webkit-playsinline
+crossorigin="anonymous"
+muted>
+</video>
+
+</a-assets>
+
+
+<a-camera
+position="0 0 0"
+look-controls="enabled: false">
+</a-camera>
+
+
+<a-entity
+id="ar-target"
+mindar-image-target="targetIndex: 0"
+>
+
+<a-video
+id="ar-video-plane"
+src="#ar-video"
+position="0 0 0.01"
+rotation="0 0 0"
+width="1"
+height="0.5625"
+material="shader: flat; transparent: true">
+</a-video>
+
+</a-entity>
+
+</a-scene>
+
+</div>
+
+
+<script>
+
+document.addEventListener("DOMContentLoaded",function(){
+
+const scene =
+document.querySelector("#ar-scene");
+
+const arSystem =
+scene.systems["mindar-image-system"];
+
+const start =
+document.querySelector("#start-screen");
+
+const startBtn =
+document.querySelector("#start-button");
+
+const status =
+document.querySelector("#status");
+
+const sound =
+document.querySelector("#sound-button");
+
+const target =
+document.querySelector("#ar-target");
+
+const video =
+document.querySelector("#ar-video");
+
+
+startBtn.addEventListener("click",async function(){
+
+start.style.display="none";
+
+status.style.display="block";
+
+status.textContent="Apunta al marcador 📷";
+
+try{
+
+await arSystem.start();
+
+}catch(e){
+
+console.error(e);
+
+status.textContent="No se pudo iniciar la cámara";
+
+}
+
+});
+
+
+target.addEventListener(
+"targetFound",
+async function(){
+
+status.textContent=
+"✨ ¡Momento mágico encontrado!";
+
+try{
+
+await video.play();
+
+}catch(e){
+
+sound.style.display="block";
+
+}
+
+});
+
+
+target.addEventListener(
+"targetLost",
+function(){
+
+status.textContent=
+"Apunta al marcador 📷";
+
+video.pause();
+
+});
+
+
+sound.addEventListener(
+"click",
+async function(){
+
+try{
+
+video.muted=false;
+
+await video.play();
+
+sound.style.display="none";
+
+}catch(e){
+
+console.error(e);
+
+}
+
+});
+
+});
+
+</script>
+
 </body>
 </html>
