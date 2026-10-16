@@ -116,7 +116,16 @@
           webkit-playsinline
           muted>
         </video>
-
+          
+    <video
+      id="homer-video"
+      src="./video2.mp4"
+      preload="auto"
+      loop
+      playsinline
+      webkit-playsinline
+      muted>
+    </video>
       </a-assets>
 
       <a-camera
@@ -126,11 +135,11 @@
 
       <a-entity
       
-  id="ar-target"
-  mindar-image-target="targetIndex: 0">
-
+ id="homer-target"
+  mindar-image-target="targetIndex: 1">
+        
   <a-video
-    src="#ar-video"
+  src="#homer-video"
     position="0 0 0"
     width="1"
     height="0.5625">
@@ -144,73 +153,88 @@
 
   <script>
 
-    const video = document.querySelector("#ar-video");
-    const mensaje = document.querySelector("#mensaje");
-    const sonido = document.querySelector("#sonido");
-    const target = document.querySelector("#ar-target");
-    const scene = document.querySelector("a-scene");
+    
+const video = document.querySelector("#ar-video");
+const homerVideo = document.querySelector("#homer-video");
+const mensaje = document.querySelector("#mensaje");
+const sonido = document.querySelector("#sonido");
+const target = document.querySelector("#ar-target");
+const homerTarget = document.querySelector("#homer-target");
+const scene = document.querySelector("a-scene");
 
-    video.muted = true;
+let videoActivo = null;
 
-    /* Cuando MindAR termina de iniciar */
-    scene.addEventListener("arReady", () => {
+video.muted = true;
+homerVideo.muted = true;
 
-      console.log("MindAR listo");
+/* Cuando MindAR termina de iniciar */
+scene.addEventListener("arReady", () => {
+  console.log("MindAR listo");
+  mensaje.innerHTML = "📷 Apunta la cámara hacia la imagen";
+});
 
-      mensaje.innerHTML = "📷 Apunta la cámara hacia la imagen";
+/* Si hay error */
+scene.addEventListener("arError", () => {
+  mensaje.innerHTML = "❌ No se pudo iniciar la cámara";
+});
 
-    });
+/* Función para reproducir el video encontrado */
+function reproducirVideo(videoElegido) {
+  if (videoActivo && videoActivo !== videoElegido) {
+    videoActivo.pause();
+    videoActivo.currentTime = 0;
+    videoActivo.muted = true;
+  }
 
-    /* Si hay error */
-    scene.addEventListener("arError", () => {
-
-      mensaje.innerHTML = "❌ No se pudo iniciar la cámara";
-
-    });
-
-    /* Cuando encuentra la imagen */
-target.addEventListener("targetFound", () => {
-
-  console.log("Imagen encontrada");
+  videoActivo = videoElegido;
+  videoActivo.currentTime = 0;
+  videoActivo.muted = true;
 
   mensaje.innerHTML = "✨ ¡Momento mágico encontrado!";
-
-  video.currentTime = 0;
-
-  video.muted = true;
-
   sonido.style.display = "block";
 
-  video.play().catch((error) => {
+  videoActivo.play().catch((error) => {
     console.log("El video necesita interacción:", error);
   });
+}
 
+/* Cuando encuentra cada imagen */
+target.addEventListener("targetFound", () => {
+  reproducirVideo(video);
 });
 
+homerTarget.addEventListener("targetFound", () => {
+  reproducirVideo(homerVideo);
+});
 
-/* Cuando deja de ver la imagen */
+/* Cuando deja de ver una imagen */
+function detenerVideo(videoElegido) {
+  videoElegido.pause();
+  videoElegido.muted = true;
+
+  if (videoActivo === videoElegido) {
+    videoActivo = null;
+    sonido.style.display = "none";
+    mensaje.innerHTML = "📷 Busca nuevamente la imagen";
+  }
+}
+
 target.addEventListener("targetLost", () => {
-
-  console.log("Imagen perdida");
-
-  mensaje.innerHTML = "📷 Busca nuevamente la imagen";
-
-  video.pause();
-
-  sonido.style.display = "none";
-
+  detenerVideo(video);
 });
 
-    /* Activar sonido */
-    sonido.addEventListener("click", () => {
+homerTarget.addEventListener("targetLost", () => {
+  detenerVideo(homerVideo);
+});
 
-      video.muted = false;
-
-      video.play();
-
-      sonido.style.display = "none";
-
-    });
+/* Activar sonido del video activo */
+sonido.addEventListener("click", () => {
+  if (videoActivo) {
+    videoActivo.muted = false;
+    videoActivo.play();
+    sonido.style.display = "none";
+  }
+});
 
   </script>
 
