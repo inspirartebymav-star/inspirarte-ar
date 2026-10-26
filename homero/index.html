@@ -191,7 +191,17 @@ function reproducirVideo(videoElegido) {
 
 
 homerTarget.addEventListener("targetFound", () => {
-  reproducirVideo(homerVideo);
+  console.log("HOMERO ENCONTRADO");
+
+  homerVideo.currentTime = 0;
+  homerVideo.muted = true;
+
+  homerVideo.play().then(() => {
+    mensaje.innerHTML = "🎬 VIDEO REPRODUCIENDO";
+  }).catch((error) => {
+    mensaje.innerHTML = "❌ VIDEO NO PUDO REPRODUCIRSE";
+    console.log(error);
+  });
 });
 
 /* Cuando deja de ver una imagen */
