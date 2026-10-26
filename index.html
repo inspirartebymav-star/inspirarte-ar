@@ -109,7 +109,7 @@
 
         <video
           id="ar-video"
-          src="./video.mp4"
+          src="./clienteperritoenelcielo.mp4"
           preload="auto"
           loop
           playsinline
@@ -132,7 +132,18 @@
         position="0 0 0"
         look-controls="enabled: false">
       </a-camera>
+    <a-entity
+  id="ar-target"
+  mindar-image-target="targetIndex: 0">
 
+  <a-video
+    src="#ar-video"
+    position="0 0 0"
+    width="1"
+    height="0.5625">
+  </a-video>
+
+</a-entity>
       <a-entity
       
  id="homer-target"
