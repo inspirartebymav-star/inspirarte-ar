@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>INSPIRARTE AR</title>
+
+  <!-- A-Frame -->
+  <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
+
+  <!-- MindAR -->
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
+  <style>
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: transparent;
+    }
+
+    .ar-container {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    a-scene {
+  background: transparent !important;
+}
+
+.a-canvas {
+  background: transparent !important;
+}
+
+    #mensaje {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+
+      padding: 12px 20px;
+      border-radius: 30px;
+
+      background: rgba(0, 0, 0, 0.75);
+      color: white;
+
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    #sonido {
+      display: none;
+
+      position: fixed;
+      bottom: 25px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+
+      border: none;
+      border-radius: 30px;
+
+      padding: 14px 25px;
+
+      background: white;
+      color: black;
+
+      font-size: 16px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="ar-container">
+
+    <div id="mensaje">
+      📷 Iniciando cámara...
+    </div>
+
+    <button id="sonido">
+      🔊 Activar sonido
+    </button>
+
+    <a-scene
+      mindar-image="
+        imageTargetSrc: ./targets.mind;
+        autoStart: true;
+        uiLoading: no;
+        uiScanning: no;
+        uiError: no;
+      "
+      embedded
+      color-space="sRGB"
+      renderer="colorManagement: true, physicallyCorrectLights, alpha: true"
+      vr-mode-ui="enabled: false"
+      device-orientation-permission-ui="enabled: false">
+
+      <a-assets>
+
+        <video
+          id="ar-video"
+         src="../video2.mp4"
+          preload="auto"
+          loop
+          playsinline
+          webkit-playsinline
+          muted>
+        </video>
+          
+    <video
+      id="homer-video"
+      src="./video2.mp4"
+      preload="auto"
+      loop
+      playsinline
+      webkit-playsinline
+      muted>
+    </video>
+      </a-assets>
+
+      <a-camera
+        position="0 0 0"
+        look-controls="enabled: false">
+      </a-camera>
+    <a-entity
+  id="ar-target"
+  mindar-image-target="targetIndex: 0">
+
+  <a-video
+    src="#ar-video"
+    position="0 0 0"
+    width="1"
+    height="1.25">
+  </a-video>
+
+</a-entity>
+      <a-entity
+      
+ id="homer-target"
+  mindar-image-target="targetIndex: 1">
+        
+  <a-video
+  src="#homer-video"
+    position="0 0 0"
+    width="1"
+    height="0.5625">
+  </a-video>
+
+      </a-entity>
+
+    </a-scene>
+
+  </div>
+
+  <script>
+
+    
+const video = document.querySelector("#ar-video");
+const homerVideo = document.querySelector("#homer-video");
+const mensaje = document.querySelector("#mensaje");
+const sonido = document.querySelector("#sonido");
+const target = document.querySelector("#ar-target");
+const homerTarget = document.querySelector("#homer-target");
+const scene = document.querySelector("a-scene");
+
+let videoActivo = null;
+
+video.muted = true;
+homerVideo.muted = true;
+
+/* Cuando MindAR termina de iniciar */
+scene.addEventListener("arReady", () => {
+  console.log("MindAR listo");
+  mensaje.innerHTML = "📷 Apunta la cámara hacia la imagen";
+});
+
+/* Si hay error */
+scene.addEventListener("arError", () => {
+  mensaje.innerHTML = "❌ No se pudo iniciar la cámara";
+});
+
+/* Función para reproducir el video encontrado */
+function reproducirVideo(videoElegido) {
+  if (videoActivo && videoActivo !== videoElegido) {
+    videoActivo.pause();
+    videoActivo.currentTime = 0;
+    videoActivo.muted = true;
+  }
+
+  videoActivo = videoElegido;
+  videoActivo.currentTime = 0;
+  videoActivo.muted = true;
+
+  mensaje.innerHTML = "✨ ¡Momento mágico encontrado!";
+  sonido.style.display = "block";
+
+  videoActivo.play().catch((error) => {
+    console.log("El video necesita interacción:", error);
+  });
+}
+
+/* Cuando encuentra cada imagen */
+target.addEventListener("targetFound", () => {
+  reproducirVideo(video);
+});
+
+homerTarget.addEventListener("targetFound", () => {
+  reproducirVideo(homerVideo);
+});
+
+/* Cuando deja de ver una imagen */
+function detenerVideo(videoElegido) {
+  videoElegido.pause();
+  videoElegido.muted = true;
+
+  if (videoActivo === videoElegido) {
+    videoActivo = null;
+    sonido.style.display = "none";
+    mensaje.innerHTML = "📷 Busca nuevamente la imagen";
+  }
+}
+
+target.addEventListener("targetLost", () => {
+  detenerVideo(video);
+});
+
+homerTarget.addEventListener("targetLost", () => {
+  detenerVideo(homerVideo);
+});
+
+/* Activar sonido del video activo */
+sonido.addEventListener("click", () => {
+  if (videoActivo) {
+    videoActivo.muted = false;
+    videoActivo.play();
+    sonido.style.display = "none";
+  }
+});
+
+  </script>
+
+</body>
+
+</html>
