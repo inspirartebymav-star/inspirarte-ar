@@ -199,7 +199,7 @@ homerTarget.addEventListener("targetFound", () => {
   homerVideo.play().then(() => {
     mensaje.innerHTML = "🎬 VIDEO REPRODUCIENDO";
   }).catch((error) => {
-    mensaje.innerHTML = "❌ VIDEO NO PUDO REPRODUCIRSE";
+    mensaje.innerHTML = "❌ " + error.name;
     console.log(error);
   });
 });
