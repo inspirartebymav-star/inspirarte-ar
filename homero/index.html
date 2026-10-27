@@ -146,6 +146,14 @@
     
 
 const homerVideo = document.querySelector("#homer-video");
+    homerVideo.addEventListener("playing", () => {
+  const plano = document.querySelector("a-plane");
+  const material = plano.getObject3D("mesh")?.material;
+
+  if (material && material.map) {
+    material.map.needsUpdate = true;
+  }
+});
 const mensaje = document.querySelector("#mensaje");
 const sonido = document.querySelector("#sonido");
 const homerTarget = document.querySelector("#homer-target");
