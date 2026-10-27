@@ -129,12 +129,12 @@
  id="homer-target"
  mindar-image-target="targetIndex: 0"
         
-<a-plane
-  material="shader: flat; src: #homer-video"
+<a-video
+  src="#homer-video"
   position="0 0 0"
   width="1"
   height="1.25">
-</a-plane>
+</a-video>
       </a-entity>
 
     </a-scene>
@@ -146,14 +146,6 @@
     
 
 const homerVideo = document.querySelector("#homer-video");
-    homerVideo.addEventListener("playing", () => {
-  const plano = document.querySelector("a-plane");
-  const material = plano.getObject3D("mesh")?.material;
-
-  if (material && material.map) {
-    material.map.needsUpdate = true;
-  }
-});
 const mensaje = document.querySelector("#mensaje");
 const sonido = document.querySelector("#sonido");
 const homerTarget = document.querySelector("#homer-target");
