@@ -5,10 +5,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>INSPIRARTE AR</title>
+  <title>INSPIRARTE AR - HOMERO</title>
 
   <!-- A-Frame -->
-  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+  <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
 
   <!-- MindAR -->
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
@@ -30,13 +30,14 @@
       height: 100%;
       overflow: hidden;
     }
-    a-scene {
-  background: transparent !important;
-}
 
-.a-canvas {
-  background: transparent !important;
-}
+    a-scene {
+      background: transparent !important;
+    }
+
+    .a-canvas {
+      background: transparent !important;
+    }
 
     #mensaje {
       position: fixed;
@@ -106,35 +107,35 @@
       device-orientation-permission-ui="enabled: false">
 
       <a-assets>
-          
-    <video
-      id="homer-video"
-      crossorigin="anonymous"
-     src="./video2.mp4"
-      preload="metadata"
-      loop
-      playsinline
-      webkit-playsinline
-      muted>
-    </video>
+
+        <video
+          id="homer-video"
+          src="./video2.mp4"
+          preload="auto"
+          loop
+          playsinline
+          webkit-playsinline
+          muted>
+        </video>
+
       </a-assets>
 
       <a-camera
         position="0 0 0"
         look-controls="enabled: false">
       </a-camera>
-  
+
       <a-entity
-      
- id="homer-target"
- mindar-image-target="targetIndex: 0"
-        
-<a-video
-  src="#homer-video"
-  position="0 0 0"
-  width="1"
-  height="1.25">
-</a-video>
+        id="homer-target"
+        mindar-image-target="targetIndex: 0">
+
+        <a-video
+          src="#homer-video"
+          position="0 0 0"
+          width="1"
+          height="1.25">
+        </a-video>
+
       </a-entity>
 
     </a-scene>
@@ -143,92 +144,76 @@
 
   <script>
 
-    
+    const homerVideo = document.querySelector("#homer-video");
+    const mensaje = document.querySelector("#mensaje");
+    const sonido = document.querySelector("#sonido");
+    const homerTarget = document.querySelector("#homer-target");
+    const scene = document.querySelector("a-scene");
 
-const homerVideo = document.querySelector("#homer-video");
-const mensaje = document.querySelector("#mensaje");
-const sonido = document.querySelector("#sonido");
-const homerTarget = document.querySelector("#homer-target");
-const scene = document.querySelector("a-scene");
+    let videoActivo = null;
 
-let videoActivo = null;
+    homerVideo.muted = true;
 
+    /* Cuando MindAR termina de iniciar */
+    scene.addEventListener("arReady", () => {
+      console.log("MindAR listo");
+      mensaje.innerHTML = "📷 Apunta la cámara hacia Homero";
+    });
 
-homerVideo.muted = true;
+    /* Si hay error */
+    scene.addEventListener("arError", () => {
+      mensaje.innerHTML = "❌ No se pudo iniciar la cámara";
+    });
 
-/* Cuando MindAR termina de iniciar */
-scene.addEventListener("arReady", () => {
-  console.log("MindAR listo");
-  mensaje.innerHTML = "📷 Apunta la cámara hacia la imagen";
-});
+    /* Cuando encuentra a Homero */
+    homerTarget.addEventListener("targetFound", () => {
 
-/* Si hay error */
-scene.addEventListener("arError", () => {
-  mensaje.innerHTML = "❌ No se pudo iniciar la cámara";
-});
+      console.log("Homero encontrado");
 
-/* Función para reproducir el video encontrado */
-function reproducirVideo(videoElegido) {
-  if (videoActivo && videoActivo !== videoElegido) {
-    videoActivo.pause();
-    videoActivo.currentTime = 0;
-    videoActivo.muted = true;
-  }
+      videoActivo = homerVideo;
 
-  videoActivo = videoElegido;
-  videoActivo.currentTime = 0;
-  videoActivo.muted = true;
+      homerVideo.currentTime = 0;
+      homerVideo.muted = true;
 
-  mensaje.innerHTML = "✨ ¡Momento mágico encontrado!";
-  sonido.style.display = "block";
+      mensaje.innerHTML = "✨ ¡Momento mágico encontrado!";
 
-  videoActivo.play().catch((error) => {
-    console.log("El video necesita interacción:", error);
-  });
-}
+      homerVideo.play()
+        .then(() => {
+          sonido.style.display = "block";
+        })
+        .catch((error) => {
+          console.log("Error reproduciendo video:", error);
+          mensaje.innerHTML = "❌ Error al reproducir el video";
+        });
 
-/* Cuando encuentra cada imagen */
+    });
 
+    /* Cuando deja de ver a Homero */
+    homerTarget.addEventListener("targetLost", () => {
 
-homerTarget.addEventListener("targetFound", () => {
-  console.log("HOMERO ENCONTRADO");
+      console.log("Homero perdido");
 
-  homerVideo.currentTime = 0;
-  homerVideo.muted = true;
+      homerVideo.pause();
+      homerVideo.currentTime = 0;
+      homerVideo.muted = true;
 
-  homerVideo.play().then(() => {
-    mensaje.innerHTML = "🎬 VIDEO REPRODUCIENDO";
-  }).catch((error) => {
-    mensaje.innerHTML = "❌ " + error.name;
-    console.log(error);
-  });
-});
+      videoActivo = null;
 
-/* Cuando deja de ver una imagen */
-function detenerVideo(videoElegido) {
-  videoElegido.pause();
-  videoElegido.muted = true;
+      sonido.style.display = "none";
+      mensaje.innerHTML = "📷 Busca nuevamente la imagen de Homero";
 
-  if (videoActivo === videoElegido) {
-    videoActivo = null;
-    sonido.style.display = "none";
-    mensaje.innerHTML = "📷 Busca nuevamente la imagen";
-  }
-}
+    });
 
+    /* Activar sonido */
+    sonido.addEventListener("click", () => {
 
-homerTarget.addEventListener("targetLost", () => {
-  detenerVideo(homerVideo);
-});
+      if (videoActivo) {
+        videoActivo.muted = false;
+        videoActivo.play();
+        sonido.style.display = "none";
+      }
 
-/* Activar sonido del video activo */
-sonido.addEventListener("click", () => {
-  if (videoActivo) {
-    videoActivo.muted = false;
-    videoActivo.play();
-    sonido.style.display = "none";
-  }
-});
+    });
 
   </script>
 
