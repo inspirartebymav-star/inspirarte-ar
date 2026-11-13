@@ -1,0 +1,217 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>INSPIRARTE AR - NAVIDAD</title>
+
+  <script src="https://aframe.io/releases/1.4.1/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: transparent;
+      font-family: Arial, sans-serif;
+    }
+
+    .ar-container {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    a-scene, .a-canvas {
+      background: transparent !important;
+    }
+
+    #mensaje {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      padding: 12px 20px;
+      border-radius: 30px;
+      background: rgba(0, 0, 0, 0.75);
+      color: white;
+      font-size: 14px;
+      text-align: center;
+      max-width: 85%;
+    }
+
+    #sonido {
+      display: none;
+      position: fixed;
+      bottom: 25px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 9999;
+      border: none;
+      border-radius: 30px;
+      padding: 14px 25px;
+      background: white;
+      color: black;
+      font-size: 16px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="ar-container">
+
+    <div id="mensaje">🎄 Iniciando cámara...</div>
+
+    <button id="sonido">🔊 Activar sonido</button>
+
+    <a-scene
+      mindar-image="
+        imageTargetSrc: ./targets.mind;
+        maxTrack: 1;
+        autoStart: true;
+        uiLoading: no;
+        uiScanning: no;
+        uiError: no;
+      "
+      embedded
+      color-space="sRGB"
+      renderer="colorManagement: true; physicallyCorrectLights: true; alpha: true"
+      vr-mode-ui="enabled: false"
+      device-orientation-permission-ui="enabled: false">
+
+      <a-assets>
+        <video
+          id="navidad-video"
+          src="./navidad.mp4"
+          preload="auto"
+          loop
+          playsinline
+          webkit-playsinline
+          muted>
+        </video>
+      </a-assets>
+
+      <a-camera
+        position="0 0 0"
+        look-controls="enabled: false">
+      </a-camera>
+
+      <!-- IMAGEN 1 -->
+      <a-entity id="target-0" mindar-image-target="targetIndex: 0">
+        <a-video src="#navidad-video" position="0 0 0"
+          width="1" height="1.25"></a-video>
+      </a-entity>
+
+      <!-- IMAGEN 2 -->
+      <a-entity id="target-1" mindar-image-target="targetIndex: 1">
+        <a-video src="#navidad-video" position="0 0 0"
+          width="1" height="1.25"></a-video>
+      </a-entity>
+
+      <!-- IMAGEN 3 -->
+      <a-entity id="target-2" mindar-image-target="targetIndex: 2">
+        <a-video src="#navidad-video" position="0 0 0"
+          width="1" height="1.25"></a-video>
+      </a-entity>
+
+      <!-- IMAGEN 4 -->
+      <a-entity id="target-3" mindar-image-target="targetIndex: 3">
+        <a-video src="#navidad-video" position="0 0 0"
+          width="1" height="1.25"></a-video>
+      </a-entity>
+
+      <!-- IMAGEN 5 -->
+      <a-entity id="target-4" mindar-image-target="targetIndex: 4">
+        <a-video src="#navidad-video" position="0 0 0"
+          width="1" height="1.25"></a-video>
+      </a-entity>
+
+      <!-- IMAGEN 6 -->
+      <a-entity id="target-5" mindar-image-target="targetIndex: 5">
+        <a-video src="#navidad-video" position="0 0 0"
+          width="1" height="1.25"></a-video>
+      </a-entity>
+
+    </a-scene>
+  </div>
+
+  <script>
+    const video = document.querySelector("#navidad-video");
+    const mensaje = document.querySelector("#mensaje");
+    const sonido = document.querySelector("#sonido");
+
+    const targets = [
+      document.querySelector("#target-0"),
+      document.querySelector("#target-1"),
+      document.querySelector("#target-2"),
+      document.querySelector("#target-3"),
+      document.querySelector("#target-4"),
+      document.querySelector("#target-5")
+    ];
+
+    const scene = document.querySelector("a-scene");
+
+    let targetActivo = null;
+
+    video.muted = true;
+
+    scene.addEventListener("arReady", () => {
+      mensaje.innerHTML = "📷 Apunta a una imagen navideña";
+    });
+
+    scene.addEventListener("arError", () => {
+      mensaje.innerHTML = "❌ No se pudo iniciar la cámara";
+    });
+
+    targets.forEach((target, index) => {
+
+      target.addEventListener("targetFound", () => {
+        targetActivo = index;
+
+        video.pause();
+        video.currentTime = 0;
+        video.muted = true;
+
+        mensaje.innerHTML = "✨ ¡Momento mágico navideño encontrado!";
+
+        video.play()
+          .then(() => {
+            sonido.style.display = "block";
+          })
+          .catch((error) => {
+            console.log("Error al reproducir:", error);
+            mensaje.innerHTML = "❌ Error al reproducir el video";
+          });
+      });
+
+      target.addEventListener("targetLost", () => {
+        if (targetActivo === index) {
+          video.pause();
+          video.currentTime = 0;
+          video.muted = true;
+          targetActivo = null;
+
+          sonido.style.display = "none";
+          mensaje.innerHTML = "📷 Busca otra imagen navideña";
+        }
+      });
+    });
+
+    sonido.addEventListener("click", () => {
+      if (targetActivo !== null) {
+        video.muted = false;
+        video.play();
+        sonido.style.display = "none";
+      }
+    });
+  </script>
+</body>
+</html>
